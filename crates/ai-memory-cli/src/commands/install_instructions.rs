@@ -56,14 +56,20 @@ fn run_inner(
     env: &crate::config::RuntimeEnv,
     report: bool,
 ) -> Result<()> {
-    let block = if let Some(skill) = args.routing_skill.as_deref() {
-        ai_memory_core::external_routing::external_skill_block(skill)?
-    } else if args.compact {
-        compact_block()
-    } else {
-        full_block()
-    };
     let targets = resolve_targets(args.target.as_ref())?;
+    let render_block = |target: &Path| -> Result<String> {
+        if let Some(skill) = args.routing_skill.as_deref() {
+            let target_name = target.file_name().and_then(|name| name.to_str());
+            Ok(ai_memory_core::external_routing::external_skill_block(
+                skill,
+                target_name,
+            )?)
+        } else if args.compact {
+            Ok(compact_block())
+        } else {
+            Ok(full_block())
+        }
+    };
     if report {
         let home = env
             .var_os("HOME")
@@ -92,10 +98,11 @@ fn run_inner(
     if args.print {
         for t in &targets {
             println!("# Would write into: {}\n", t.display());
-            println!("{block}");
+            println!("{}", render_block(t)?);
         }
     } else {
         for target in &targets {
+            let block = render_block(target)?;
             let outcome = apply_atomic(target, |existing| {
                 Ok(merge_instructions_block(existing, &block))
             })?;

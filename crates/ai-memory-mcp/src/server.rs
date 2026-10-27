@@ -7059,7 +7059,7 @@ impl AiMemoryServer {
         let external_block = args
             .routing_skill
             .as_deref()
-            .map(ai_memory_core::external_routing::external_skill_block)
+            .map(|skill| ai_memory_core::external_routing::external_skill_block(skill, None))
             .transpose()
             .map_err(|error| McpError::invalid_params(error.to_string(), None))?;
         let managed_skills: Vec<_> = ai_memory_core::routing_skills::MANAGED_SKILLS
@@ -11526,7 +11526,7 @@ mod tests {
         );
         assert_eq!(
             response["markered_block"],
-            ai_memory_core::external_routing::external_skill_block("example-memory-router")
+            ai_memory_core::external_routing::external_skill_block("example-memory-router", None)
                 .unwrap()
         );
         assert_eq!(response["managed_skills"], serde_json::json!([]));
