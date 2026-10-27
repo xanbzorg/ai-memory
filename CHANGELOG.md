@@ -215,8 +215,6 @@ version in [`docs/changelog/`](docs/changelog/):
   and callers such as the reranker named only the first candidate, so a log
   could blame the primary for a timeout another candidate caused. Response
   bodies are never logged (#1628).
-||||||| parent of 671f5162 (feat(routing): support an external memory skill router)
-
 
 ## [3.2.8] - 2026-10-27
 
