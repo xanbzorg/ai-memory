@@ -526,10 +526,10 @@ jobs:
             --config=.gitleaks.toml --redact --verbose --exit-code=2 \
             --report-format=sarif --report-path="${RUNNER_TEMP}/gitleaks.sarif" \
             --log-opts="${log_opts}" . || scan_status=$?
-          printf '### Gitleaks secret scan\n\nScope: %s\n\nExit code: %s (0: clean, 2: findings, other: scanner error). See the finding report artifact (snippets redacted; commit metadata omitted).\n' \
+          printf '### Gitleaks secret scan\n\nScope: %s\n\nExit code: %s (0: clean, 2: findings, other: scanner error). See the finding report artifact (snippets redacted; commit messages and identities omitted).\n' \
             "${log_opts}" "${scan_status}" >> "${GITHUB_STEP_SUMMARY}"
           exit "${scan_status}"
-      - name: Remove commit metadata from the finding report
+      - name: Remove commit messages and identities from the finding report
         if: always()
         run: |
           python3 - <<'PYTHON'

@@ -7148,8 +7148,8 @@ impl AiMemoryServer {
         if let Some(skill) = args.routing_skill.as_deref() {
             response["notes"] = serde_json::json!([
                 "Use the canonical instruction file named by current project instructions; otherwise select the filename matching your agent identity from agent_filenames.",
-                "If the file does not exist, create it with markered_block and a trailing newline. If it exists without line-delimited ai-memory markers, append markered_block with one blank line of separation.",
-                "If the file contains line-delimited ai-memory markers, replace only that block, ignore inline marker mentions, and preserve every other line.",
+                "If the file does not exist, create it with markered_block and a trailing newline. If no complete line-delimited ai-memory block exists, append markered_block with one blank line of separation.",
+                "Replace only the first complete line-delimited ai-memory block, ignore inline marker mentions, and preserve every other line.",
                 "Refresh this same instruction file at its existing path and name; preserve all content outside the line-delimited ai-memory markers.",
                 format!(
                     "Preserve the {skill} router. When the live schema supports routing_skill, refresh with compact: true and routing_skill: \"{skill}\"; otherwise use the CLI command in markered_block."
