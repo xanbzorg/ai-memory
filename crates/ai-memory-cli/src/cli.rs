@@ -1820,6 +1820,10 @@ pub struct InstallInstructionsArgs {
     /// instead of inlining full operational guidance.
     #[arg(long)]
     pub compact: bool,
+    /// Route through an independently installed Agent Skill instead of the
+    /// managed skills. Implies compact routing; requires --no-skills.
+    #[arg(long, requires = "no_skills")]
+    pub routing_skill: Option<String>,
     /// Scope for managed ai-memory skill installation.
     #[arg(long = "skills-scope", value_enum)]
     pub skills_scope: Option<InstallSkillsScope>,

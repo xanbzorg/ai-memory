@@ -13,6 +13,11 @@ version in [`docs/changelog/`](docs/changelog/):
 
 ### Added
 
+- Added optional external Agent Skill routing to `install-instructions`
+  (`--routing-skill`, paired with `--no-skills`) and
+  `memory_install_self_routing` (`routing_skill`), keeping repeated refreshes
+  on the selected router without installing managed skills (#2).
+
 - `ai-memory merge-project --workspace <w> --from <source> --into <target>`
   losslessly joins two project identities inside one workspace. Its default is
   an exact dry run; `--confirm` re-stamps page history, sessions, observations,

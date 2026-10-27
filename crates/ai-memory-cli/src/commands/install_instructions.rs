@@ -56,7 +56,9 @@ fn run_inner(
     env: &crate::config::RuntimeEnv,
     report: bool,
 ) -> Result<()> {
-    let block = if args.compact {
+    let block = if let Some(skill) = args.routing_skill.as_deref() {
+        ai_memory_core::external_routing::external_skill_block(skill)?
+    } else if args.compact {
         compact_block()
     } else {
         full_block()

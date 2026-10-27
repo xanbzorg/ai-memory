@@ -636,6 +636,7 @@ fn install_context_files(
             print: false,
             no_skills: false,
             compact: false,
+            routing_skill: None,
             skills_scope: None,
             skills_agent: Some(agent),
             skills_target_dir: Some(skill_root),
