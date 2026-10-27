@@ -404,6 +404,12 @@
           "boolean",
           "null"
         ]
+      },
+      "routing_skill": {
+        "type": [
+          "null",
+          "string"
+        ]
       }
     },
     "required": []
