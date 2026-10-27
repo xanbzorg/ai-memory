@@ -529,15 +529,24 @@ jobs:
           import json, os, pathlib, re
           report_dir = pathlib.Path(os.environ["RUNNER_TEMP"])
           source = report_dir / "gitleaks.sarif"
-          if source.exists():
-              report = json.loads(source.read_text())
+          def sanitize(report):
               for run in report.get("runs", []):
                   for result in run.get("results", []):
-                      fingerprints = result.get("partialFingerprints", {})
-                      commit = fingerprints.get("commitSha", "")
+                      commit = result.get("partialFingerprints", {}).get("commitSha", "")
                       result["partialFingerprints"] = (
                           {"commitSha": commit} if re.fullmatch(r"[0-9a-fA-F]{40,64}", commit) else {}
                       )
+              return report
+          fixture = {"runs": [{"results": [{"partialFingerprints": {
+              "commitSha": "a" * 40, "commitMessage": "private-metadata",
+              "author": "private-metadata", "email": "private-metadata"
+          }, "locations": [{"snippet": "REDACTED"}]}]}]}
+          checked = sanitize(fixture)
+          assert checked["runs"][0]["results"][0]["partialFingerprints"] == {"commitSha": "a" * 40}
+          assert "private-metadata" not in json.dumps(checked)
+          assert checked["runs"][0]["results"][0]["locations"][0]["snippet"] == "REDACTED"
+          if source.exists():
+              report = sanitize(json.loads(source.read_text()))
               (report_dir / "gitleaks-redacted.sarif").write_text(json.dumps(report))
           PYTHON
       - name: Upload secret finding report with redacted snippets
