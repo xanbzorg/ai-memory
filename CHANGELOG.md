@@ -13,6 +13,11 @@ version in [`docs/changelog/`](docs/changelog/):
 
 ### Added
 
+- Added optional external Agent Skill routing to `install-instructions`
+  (`--routing-skill`, paired with `--no-skills`) and
+  `memory_install_self_routing` (`routing_skill`), keeping repeated refreshes
+  on the selected router without installing managed skills.
+
 - `ai-memory merge-project --workspace <w> --from <source> --into <target>`
   losslessly joins two project identities inside one workspace. Its default is
   an exact dry run; `--confirm` re-stamps page history, sessions, observations,
@@ -210,6 +215,8 @@ version in [`docs/changelog/`](docs/changelog/):
   and callers such as the reranker named only the first candidate, so a log
   could blame the primary for a timeout another candidate caused. Response
   bodies are never logged (#1628).
+||||||| parent of 671f5162 (feat(routing): support an external memory skill router)
+
 
 ## [3.2.8] - 2026-10-27
 

@@ -11,6 +11,7 @@ pub mod agent_backup;
 pub mod compaction_recap;
 pub mod error;
 pub mod excerpt;
+pub mod external_routing;
 pub mod fix_lines;
 pub mod handoff;
 pub mod ingest_metrics;

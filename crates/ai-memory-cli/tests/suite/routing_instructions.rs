@@ -112,6 +112,83 @@ fn no_skills_writes_only_instruction_snippet() {
 }
 
 #[test]
+fn external_routing_skill_refresh_preserves_content_without_installing_skills() {
+    let project = tempfile::tempdir().unwrap();
+    let home = tempfile::tempdir().unwrap();
+    let target = project.path().join("AGENTS.md");
+    let prefix = "# Project\n\nKeep this intro exactly.\n\n";
+    let suffix = "\nKeep this tail exactly.\n";
+    fs::write(
+        &target,
+        format!("{prefix}{MARKER_START}\nold routing\n{MARKER_END}\n{suffix}"),
+    )
+    .unwrap();
+    let args = [
+        "install-instructions",
+        "--target",
+        "AGENTS.md",
+        "--compact",
+        "--no-skills",
+        "--routing-skill",
+        "example-memory-router",
+    ];
+    assert_success(run_ai_memory(project.path(), home.path(), &args));
+    let first = fs::read_to_string(&target).unwrap();
+    assert!(first.starts_with(prefix));
+    assert!(first.ends_with(suffix));
+    assert!(first.contains("`example-memory-router`"));
+    assert!(!first.contains("ai-memory-*"));
+    assert!(!first.contains("managed_skills"));
+    assert_eq!(first.matches(MARKER_START).count(), 1);
+    assert_success(run_ai_memory(project.path(), home.path(), &args));
+    assert_eq!(fs::read_to_string(&target).unwrap(), first);
+    for path in ["CLAUDE.md", ".claude/skills", ".agents/skills"] {
+        assert!(!project.path().join(path).exists(), "unexpected {path}");
+    }
+}
+
+#[test]
+fn invalid_external_routing_skill_leaves_target_unchanged() {
+    let project = tempfile::tempdir().unwrap();
+    let home = tempfile::tempdir().unwrap();
+    let target = project.path().join("AGENTS.md");
+    fs::write(&target, "keep exactly\n").unwrap();
+    let error = assert_failure(run_ai_memory(
+        project.path(),
+        home.path(),
+        &[
+            "install-instructions",
+            "--target",
+            "AGENTS.md",
+            "--no-skills",
+            "--routing-skill",
+            "bad`name",
+        ],
+    ));
+    assert!(error.contains("routing skill"));
+    assert_eq!(fs::read_to_string(target).unwrap(), "keep exactly\n");
+}
+
+#[test]
+fn external_routing_skill_requires_explicit_no_skills() {
+    let project = tempfile::tempdir().unwrap();
+    let home = tempfile::tempdir().unwrap();
+    let error = assert_failure(run_ai_memory(
+        project.path(),
+        home.path(),
+        &[
+            "install-instructions",
+            "--target",
+            "AGENTS.md",
+            "--routing-skill",
+            "example-memory-router",
+        ],
+    ));
+    assert!(error.contains("--no-skills"));
+    assert!(!project.path().join("AGENTS.md").exists());
+}
+
+#[test]
 fn install_instructions_updates_only_markered_block_and_backs_up_original() {
     let project = tempfile::tempdir().unwrap();
     let home = tempfile::tempdir().unwrap();
