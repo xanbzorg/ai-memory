@@ -11,6 +11,18 @@ version in [`docs/changelog/`](docs/changelog/):
 
 ## [Unreleased]
 
+### Added
+
+- Added optional external Agent Skill routing to `install-instructions`
+  (`--routing-skill`, paired with `--no-skills`) and
+  `memory_install_self_routing` (`routing_skill`), keeping repeated refreshes
+  on the selected router without installing managed skills (#1).
+
+### Fixed
+
+- Updated transitive TLS, Tokio, and SDK dependencies to resolve security
+  advisories inherited by the deployed-version backport (#1).
+
 ## [3.1.2] - 2026-10-20
 
 ### Fixed
