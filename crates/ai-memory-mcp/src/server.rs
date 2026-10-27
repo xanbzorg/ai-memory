@@ -1556,6 +1556,10 @@ struct InstallSelfRoutingArgs {
     /// already uses the compact snippet.
     #[serde(default)]
     compact: Option<bool>,
+    /// Independently installed Agent Skill that replaces the managed skills.
+    /// Implies compact routing and returns an empty managed_skills array.
+    #[serde(default)]
+    routing_skill: Option<String>,
 }
 
 // The "you MUST pass exactly one of path/query" contract lives in the
@@ -6450,6 +6454,8 @@ impl AiMemoryServer {
         `.github/skills`, `.hermes/skills`, `$GROK_HOME/skills` (default `~/.grok/skills`), \
         `$COPILOT_HOME/skills` (default `~/.copilot/skills`), and Devin Windows global roots. \
         Use when the user asks to install or refresh ai-memory routing in this project. \
+        Pass `routing_skill` to delegate to an independently installed Agent Skill \
+        and omit managed skill payloads; this implies compact routing. \
         Pass `compact: true` to return the compact routing block that delegates \
         to installed Agent Skills, or when refreshing a file that already uses the compact snippet. \
         After calling, use your Write/Edit tool to preserve non-ai-memory \
@@ -6467,8 +6473,15 @@ impl AiMemoryServer {
         &self,
         Parameters(args): Parameters<InstallSelfRoutingArgs>,
     ) -> Result<CallToolResult, McpError> {
+        let external_block = args
+            .routing_skill
+            .as_deref()
+            .map(ai_memory_core::external_routing::external_skill_block)
+            .transpose()
+            .map_err(|error| McpError::invalid_params(error.to_string(), None))?;
         let managed_skills: Vec<_> = ai_memory_core::routing_skills::MANAGED_SKILLS
             .iter()
+            .filter(|_| external_block.is_none())
             .map(|skill| {
                 serde_json::json!({
                     "name": skill.name,
@@ -6478,8 +6491,10 @@ impl AiMemoryServer {
                 })
             })
             .collect();
-        let is_compact = args.compact.unwrap_or(false);
-        let markered_block = if is_compact {
+        let is_compact = external_block.is_some() || args.compact.unwrap_or(false);
+        let markered_block = if let Some(block) = external_block {
+            block
+        } else if is_compact {
             ai_memory_core::compact_block()
         } else {
             ai_memory_core::full_block()
@@ -9609,6 +9624,36 @@ mod tests {
         assert!(notes.contains("explicitly forces replacement"));
     }
     #[tokio::test]
+    async fn external_routing_skill_returns_no_managed_skill_payloads() {
+        let (_tmp, _store, server, _ws, _pj) = setup_server().await;
+        let response = call_tool_json(
+            server
+                .memory_install_self_routing(Parameters(InstallSelfRoutingArgs {
+                    routing_skill: Some("example-memory-router".into()),
+                    ..Default::default()
+                }))
+                .await
+                .unwrap(),
+        );
+        assert_eq!(
+            response["markered_block"],
+            ai_memory_core::external_routing::external_skill_block("example-memory-router")
+                .unwrap()
+        );
+        assert_eq!(response["managed_skills"], serde_json::json!([]));
+        assert_eq!(response["compact"], true);
+        assert!(
+            server
+                .memory_install_self_routing(Parameters(InstallSelfRoutingArgs {
+                    routing_skill: Some("bad`name".into()),
+                    ..Default::default()
+                }))
+                .await
+                .is_err()
+        );
+    }
+
+    #[tokio::test]
     async fn memory_install_self_routing_compact_returns_compact_block() {
         let (_tmp, _store, server, _ws, _pj) = setup_server().await;
 
@@ -9616,6 +9661,7 @@ mod tests {
             server
                 .memory_install_self_routing(Parameters(InstallSelfRoutingArgs {
                     compact: Some(true),
+                    ..Default::default()
                 }))
                 .await
                 .unwrap(),
