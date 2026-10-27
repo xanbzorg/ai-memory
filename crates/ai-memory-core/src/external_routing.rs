@@ -2,7 +2,7 @@
 
 use crate::{MARKER_END, MARKER_START};
 
-/// An external routing skill name does not follow Agent Skills naming rules.
+/// An external routing name exceeds the portable ASCII subset accepted here.
 #[derive(Debug, thiserror::Error)]
 #[error(
     "routing skill must contain 1–64 lowercase ASCII letters, digits, or hyphens, with no leading, trailing, or consecutive hyphens"
