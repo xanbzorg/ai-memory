@@ -170,6 +170,24 @@ fn invalid_external_routing_skill_leaves_target_unchanged() {
 }
 
 #[test]
+fn external_routing_refresh_guidance_keeps_the_selected_instruction_file() {
+    for selected in [Some("AGENTS.md"), Some("custom instructions.md"), None] {
+        let project = tempfile::tempdir().unwrap();
+        let home = tempfile::tempdir().unwrap();
+        let mut args = vec!["install-instructions", "--no-skills"];
+        args.extend(["--routing-skill", "router"]);
+        if let Some(path) = selected {
+            args.extend(["--target", path]);
+        }
+        assert_success(run_ai_memory(project.path(), home.path(), &args));
+        let target = selected.unwrap_or("CLAUDE.md");
+        let block = fs::read_to_string(project.path().join(target)).unwrap();
+        assert!(block.contains("--target \"<canonical-instruction-file>\""));
+        assert!(block.contains("this same instruction file"));
+    }
+}
+
+#[test]
 fn external_routing_skill_requires_explicit_no_skills() {
     let project = tempfile::tempdir().unwrap();
     let home = tempfile::tempdir().unwrap();
