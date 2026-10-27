@@ -519,12 +519,30 @@ jobs:
             --config=.gitleaks.toml --redact --verbose --exit-code=2 \
             --report-format=sarif --report-path="${RUNNER_TEMP}/gitleaks.sarif" \
             --log-opts="${log_opts}" . || scan_status=$?
-          printf '### Gitleaks secret scan\n\nScope: %s\n\nExit code: %s (0: clean, 2: findings, other: scanner error). See the redacted report artifact.\n' \
+          printf '### Gitleaks secret scan\n\nScope: %s\n\nExit code: %s (0: clean, 2: findings, other: scanner error). See the finding report artifact (snippets redacted; commit metadata omitted).\n' \
             "${log_opts}" "${scan_status}" >> "${GITHUB_STEP_SUMMARY}"
           exit "${scan_status}"
-      - name: Upload redacted secret scan report
+      - name: Remove commit metadata from the finding report
+        if: always()
+        run: |
+          python3 - <<'PYTHON'
+          import json, os, pathlib, re
+          report_dir = pathlib.Path(os.environ["RUNNER_TEMP"])
+          source = report_dir / "gitleaks.sarif"
+          if source.exists():
+              report = json.loads(source.read_text())
+              for run in report.get("runs", []):
+                  for result in run.get("results", []):
+                      fingerprints = result.get("partialFingerprints", {})
+                      commit = fingerprints.get("commitSha", "")
+                      result["partialFingerprints"] = (
+                          {"commitSha": commit} if re.fullmatch(r"[0-9a-fA-F]{40,64}", commit) else {}
+                      )
+              (report_dir / "gitleaks-redacted.sarif").write_text(json.dumps(report))
+          PYTHON
+      - name: Upload secret finding report with redacted snippets
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: gitleaks-results.sarif
-          path: ${{ runner.temp }}/gitleaks.sarif
+          path: ${{ runner.temp }}/gitleaks-redacted.sarif

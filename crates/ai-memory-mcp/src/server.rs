@@ -6559,6 +6559,9 @@ impl AiMemoryServer {
         });
         if let Some(skill) = args.routing_skill.as_deref() {
             response["notes"] = serde_json::json!([
+                "Use the canonical instruction file named by current project instructions; otherwise select the filename matching your agent identity from agent_filenames.",
+                "If the file does not exist, create it with markered_block and a trailing newline. If it exists without line-delimited ai-memory markers, append markered_block with one blank line of separation.",
+                "If the file contains line-delimited ai-memory markers, replace only that block, ignore inline marker mentions, and preserve every other line.",
                 "Refresh this same instruction file at its existing path and name; preserve all content outside the line-delimited ai-memory markers.",
                 format!(
                     "Preserve the {skill} router. When the live schema supports routing_skill, refresh with compact: true and routing_skill: \"{skill}\"; otherwise use the CLI command in markered_block."
@@ -9655,6 +9658,10 @@ mod tests {
         assert!(notes.contains("routing_skill"));
         assert!(notes.contains("example-memory-router"));
         assert!(notes.contains("same instruction file"));
+        assert!(notes.contains("canonical instruction file"));
+        assert!(notes.contains("create it with markered_block"));
+        assert!(notes.contains("append markered_block"));
+        assert!(notes.contains("preserve every other line"));
         assert!(!notes.contains("Install each managed_skills"));
         assert!(
             server
