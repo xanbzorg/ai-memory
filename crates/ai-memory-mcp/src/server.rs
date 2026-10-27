@@ -6499,7 +6499,7 @@ impl AiMemoryServer {
         } else {
             ai_memory_core::full_block()
         };
-        let response = serde_json::json!({
+        let mut response = serde_json::json!({
             "markered_block": markered_block,
             "compact": is_compact,
             "marker_start": ai_memory_core::MARKER_START,
@@ -6557,6 +6557,15 @@ impl AiMemoryServer {
                 "Existing skill files containing the managed marker <!-- ai-memory-managed: routing-skill --> may be replaced; unmanaged same-name skills must not be overwritten unless the human explicitly forces replacement."
             ]
         });
+        if let Some(skill) = args.routing_skill.as_deref() {
+            response["notes"] = serde_json::json!([
+                "Refresh this same instruction file at its existing path and name; preserve all content outside the line-delimited ai-memory markers.",
+                format!(
+                    "Preserve the {skill} router. When the live schema supports routing_skill, refresh with compact: true and routing_skill: \"{skill}\"; otherwise use the CLI command in markered_block."
+                ),
+                "The external router replaces the managed skills. No managed skill payloads are returned, and existing managed skill files are not automatically removed."
+            ]);
+        }
         ok_json(&response)
     }
 }
@@ -9642,6 +9651,11 @@ mod tests {
         );
         assert_eq!(response["managed_skills"], serde_json::json!([]));
         assert_eq!(response["compact"], true);
+        let notes = response["notes"].to_string();
+        assert!(notes.contains("routing_skill"));
+        assert!(notes.contains("example-memory-router"));
+        assert!(notes.contains("same instruction file"));
+        assert!(!notes.contains("Install each managed_skills"));
         assert!(
             server
                 .memory_install_self_routing(Parameters(InstallSelfRoutingArgs {

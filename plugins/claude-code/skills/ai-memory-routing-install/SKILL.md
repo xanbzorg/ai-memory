@@ -55,6 +55,16 @@ Use platform-aware path joining. Do not build paths by string concatenation.
 
 ## Refresh guidance
 
+Inspect the existing block before refreshing it. If it names an external
+`routing_skill`, preserve that router. Check the live tool schema before passing
+`compact: true` and `routing_skill: "<existing-routing-skill>"` to
+`memory_install_self_routing`; use the CLI below when that field is unsupported.
+Replace the block in the same instruction file at its existing path and name,
+and keep the external router instead of installing managed skill payloads.
+For CLI refresh, use `ai-memory install-instructions --target "<canonical-instruction-file>" --compact --no-skills --routing-skill "<existing-routing-skill>"`,
+substituting the existing file path and router name for the quoted placeholders.
+Otherwise, use the managed-skill refresh below.
+
 For an agent-side refresh, call the install-routing tool (pass `compact: true` if the target file already uses the compact snippet or if managed Agent Skills handle detailed routing). Its returned `target_hints` are authoritative for skill roots: choose the right instruction filename from `agent_filenames`, write the markered block with the agent's file-edit tool, and write each managed skill file below the selected hint using its `relative_path`. Claude Code normally uses `CLAUDE.md` and `.claude/skills`; Codex, OpenCode, Cursor, Gemini CLI, and AGENTS-aware clients normally use `AGENTS.md` and `.agents/skills`; Grok Build CLI uses `AGENTS.md` and `.grok/skills`; GitHub Copilot CLI uses `AGENTS.md` and `.github/skills` unless the project says otherwise.
 
 For a CLI refresh, prefer the canonical install command. The snippet and skills must be updated from the same core-owned assets so they do not drift.

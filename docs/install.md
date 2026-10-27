@@ -3252,7 +3252,7 @@ Linux, and macOS. This does not rewrite line endings in user-authored files.
 | Flag | Meaning |
 |---|---|
 | `--no-skills` | Refresh only the markered instruction block. |
-| `--routing-skill <name>` | Delegate compact routing to an independently installed Agent Skill. Requires `--no-skills`; names start with an ASCII letter or digit and contain only ASCII letters, digits, hyphens, or underscores (128 characters maximum). |
+| `--routing-skill <name>` | Delegate compact routing to an independently installed Agent Skill. Requires `--no-skills`; names contain 1–64 lowercase ASCII letters, digits, or hyphens, with no leading, trailing, or consecutive hyphens. |
 | `--skills-scope <scope>` | Choose project-local or user-global skill roots. Values: `project`, `global`. Defaults to `project`. |
 | `--skills-agent <agent>` | Choose `.claude/skills`, `.agents/skills`, `.devin/skills`, `.grok/skills`, GitHub Copilot CLI's `.github/skills`, or both Claude/Agents roots. Values: `claude-code`, `agents`, `devin`, `grok`, `copilot-cli`, `both`. By default, `CLAUDE.md` targets imply `claude-code`, `AGENTS.md` targets imply `agents`, and both instruction files imply `both`. |
 | `--skills-target-dir <dir>` | Write managed skill directories below an explicit root instead of inferring from scope and agent. |
@@ -3263,7 +3263,9 @@ When a separately installed router replaces the managed skills, refresh with
 The generated block preserves that selection in its refresh instructions.
 For an agent-side refresh, pass `routing_skill: "your-memory-router"` to
 `memory_install_self_routing`; it implies compact routing and returns an empty
-`managed_skills` array. This option does not install or remove any skill files.
+`managed_skills` array. Existing managed skill files remain on disk; review
+`ai-memory uninstall --only skills` (dry-run) for marker-owned default roots.
+The cleanup guidance below covers applying removal and custom skill roots.
 Select the canonical instruction file explicitly to avoid creating another file.
 
 Use `install-skills` when the instruction block is already right and only the
