@@ -10,7 +10,7 @@ Use this skill when the user wants ai-memory's agent-facing routing instructions
 
 ## Tools in this cluster
 
-- `memory_install_self_routing` returns the canonical markered instruction block, marker strings, filename hints, notes, and managed skill payloads for agents that cannot let the MCP server write the host filesystem directly. Pass `compact: true` when managed Agent Skills are installed or when refreshing a file that already uses the compact snippet.
+- `memory_install_self_routing` returns the canonical markered instruction block, marker strings, filename hints, notes, and managed skill payloads for agents that cannot let the MCP server write the host filesystem directly. Pass `compact: true` when managed Agent Skills are installed or when refreshing a file that already uses the compact snippet. Pass `routing_skill` to delegate to an independently installed Agent Skill; this implies compact routing and omits managed skill payloads.
 
 ## Managed instruction marker
 
