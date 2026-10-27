@@ -6550,7 +6550,7 @@ impl AiMemoryServer {
             "notes": [
                 "Pick the filename matching your own agent identity.",
                 "If the target file already contains <!-- ai-memory:start --> / <!-- ai-memory:end --> delimiters alone on their own lines, replace ONLY that line-delimited block in place; ignore inline mentions and preserve every other line.",
-                "If the target file already uses the compact routing block (or if managed Agent Skills handle detailed routing), call memory_install_self_routing with compact: true so the compact format is preserved.",
+                "If the target file already uses the compact routing block (or if managed Agent Skills handle detailed routing), call memory_install_self_routing with compact: true so the compact format is preserved. For an external-routing block, also pass its existing routing_skill value; this returns the external block and no managed skill payloads.",
                 "If the file doesn't exist, create it with just the markered_block (plus a trailing newline).",
                 "If the file exists but has no ai-memory markers, append the markered_block with one blank line of separation from existing content.",
                 "Install each managed_skills item under the selected skill root from target_hints using its relative_path, for example .claude/skills/<relative_path>, .agents/skills/<relative_path>, .devin/skills/<relative_path>, .grok/skills/<relative_path>, $GROK_HOME/skills/<relative_path> (default ~/.grok/skills), .github/skills/<relative_path> or $COPILOT_HOME/skills/<relative_path> (default ~/.copilot/skills) for GitHub Copilot CLI, or %APPDATA%\\devin\\skills\\<relative_path> on Windows global Devin installs.",
